@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ghost Coin Dash — a tiny game from one prompt</title>
+<style>
+  body { margin:0; background:#14092b; color:#fff; font-family:system-ui,sans-serif; text-align:center; }
+  h1 { font-size:20px; margin:14px 0 4px; }
+  p { margin:4px 0 10px; color:#cdbcf5; font-size:14px; }
+  canvas { background:#1e1040; border:3px solid #e200a8; border-radius:12px; }
+</style>
+</head>
+<body>
+<h1>👻 Ghost Coin Dash</h1>
+<p>Arrow keys / WASD to move. Collect the magenta coins, dodge the red bugs. 60 seconds!</p>
+<canvas id="c" width="640" height="440"></canvas>
+<p id="s">Score: 0</p>
+<script>
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const S = document.getElementById('s');
+let g = {x:320, y:220}, keys = {}, score = 0, t0 = Date.now(), over = false;
+let coins = [], bugs = [];
+function spawnCoin(){ coins.push({x:30+Math.random()*580, y:30+Math.random()*380}); }
+function spawnBug(){ const a = Math.random()*Math.PI*2; bugs.push({x:320, y:220, vx:Math.cos(a)*1.6, vy:Math.sin(a)*1.6}); }
+for (let i=0;i<5;i++) spawnCoin();
+setInterval(()=>{ if(!over && bugs.length<7) spawnBug(); }, 5000);
+addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+addEventListener('keyup',   e => keys[e.key.toLowerCase()] = false);
+function star(x,y,r){ ctx.beginPath(); for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5, rr=i%2? r*0.45:r;
+  ctx[i?'lineTo':'moveTo'](x+rr*Math.cos(a), y+rr*Math.sin(a)); } ctx.closePath(); ctx.fill(); }
+function ghost(x,y){ ctx.fillStyle='#fff'; ctx.strokeStyle='#000'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.arc(x,y-4,20,Math.PI,0); ctx.lineTo(x+20,y+16);
+  for(let i=0;i<4;i++) ctx.arc(x+15-i*10, y+16, 5, 0, Math.PI, true);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#000'; star(x-8,y-6,5); star(x+8,y-6,5); }
+function loop(){
+  const left = 60 - (Date.now()-t0)/1000;
+  if (left <= 0 && !over) { over = true; S.textContent = 'Time up! Final score: ' + score; }
+  if (!over) {
+    if (keys['arrowleft']||keys['a']) g.x -= 4; if (keys['arrowright']||keys['d']) g.x += 4;
+    if (keys['arrowup']||keys['w']) g.y -= 4;   if (keys['arrowdown']||keys['s']) g.y += 4;
+    g.x = Math.max(24, Math.min(616, g.x)); g.y = Math.max(28, Math.min(420, g.y));
+    for (const b of bugs) { b.x += b.vx; b.y += b.vy;
+      if (b.x<14||b.x>626) b.vx*=-1; if (b.y<14||b.y>426) b.vy*=-1;
+      if (Math.hypot(b.x-g.x, b.y-g.y) < 30) { score = Math.max(0, score-3); b.x = 320; b.y = 40; } }
+    coins = coins.filter(c => { if (Math.hypot(c.x-g.x, c.y-g.y) < 30) { score++; spawnCoin(); return false; } return true; });
+    S.textContent = 'Score: ' + score + '   Time: ' + Math.ceil(left) + 's';
+  }
+  ctx.clearRect(0,0,640,440);
+  for (const c of coins) { ctx.fillStyle='#e200a8'; ctx.beginPath(); ctx.arc(c.x,c.y,13,0,7); ctx.fill();
+    ctx.fillStyle='#fff'; star(c.x,c.y,7); }
+  ctx.fillStyle='#ff3b30'; for (const b of bugs) { ctx.beginPath(); ctx.arc(b.x,b.y,12,0,7); ctx.fill(); }
+  ghost(g.x, g.y);
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
