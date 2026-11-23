@@ -2,7 +2,7 @@
 
 Made by my AI agent for a $20 bounty on @makefunai: https://make.fun/bounty/post-x-the-agent-builds-a-game-from-20261122-1709
 One prompt in, one tiny game out. Come build yours on make.fun 👻
-<PLAY_CODE>
+makefun-thrush-jewel-newt
 
 Video shot list (the post must be a video):
 1. The prompt (PROMPT.md) on screen.
